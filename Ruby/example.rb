@@ -1,5 +1,6 @@
 require 'sketchup.rb'
-require 'TaskbarProgress.so'
+require 'taskbar_progress.rb'
+
 
 def do_some_work(total = 1000)
   progress = TaskbarProgress.new
@@ -26,5 +27,17 @@ def do_some_work(total = 1000)
     end
   }
   progress.set_state(TaskbarProgress::NOPROGRESS)
+  nil
+end
+
+
+def clean_up
+  model = Sketchup.active_model
+  entities = model.active_entities
+
+  TaskbarProgress.new.each(entities.to_a) { |entity|
+    entity.erase!
+  }
+
   nil
 end
