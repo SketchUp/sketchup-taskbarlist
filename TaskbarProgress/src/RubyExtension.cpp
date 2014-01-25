@@ -7,17 +7,25 @@
 #include "TaskbarProgress.h"
 
 
-static HWND get_sketchup_handle();
-static Win7TaskbarProgress* get_progressbar(VALUE self);
-static void wrap_progressbar_free(Win7TaskbarProgress* progressbar);
+static HWND get_sketchup_window_handle();
+static BOOL CALLBACK EnumThreadWndProc(HWND hwnd,LPARAM lParam);
+static TaskbarProgress* get_progressbar(VALUE self);
+static void wrap_progressbar_free(TaskbarProgress* progressbar);
 static VALUE wrap_progressbar_alloc(VALUE klass);
 static VALUE wrap_set_state(VALUE self, VALUE flag);
 static VALUE wrap_set_value(VALUE self, VALUE completed, VALUE total);
-BOOL CALLBACK EnumThreadWndProc(HWND hwnd,LPARAM lParam);
 
 
-static HWND get_sketchup_handle()
+static HWND get_sketchup_window_handle()
 {
+	// TODO(thomthom): Review is there is a better way of getting a handle to the
+	// SketchUp window.
+	// GetActiveWindow cannot be used because it fails when no SketchUp windows
+	// are active. This function might be called when SketchUp is not the active
+	// window because it's doing some long task that made the user switch to do
+	// something else.
+	// Instead the thread's windows are enumerated and the root owner is picked.
+	// This should be the SketchUp window.
 	DWORD thread_id = GetCurrentThreadId();
 	assert(thread_id);
 	HWND sketchup_handle = NULL;
@@ -27,7 +35,8 @@ static HWND get_sketchup_handle()
 	return sketchup_handle;
 }
 
-BOOL CALLBACK EnumThreadWndProc(HWND hwnd, LPARAM lParam)
+
+static BOOL CALLBACK EnumThreadWndProc(HWND hwnd, LPARAM lParam)
 {
 	// TODO(thomthom): Might want to check the window title of `root` to ensure
 	// that is really is the SketchUp Window. When going over the whole set of
@@ -42,19 +51,21 @@ BOOL CALLBACK EnumThreadWndProc(HWND hwnd, LPARAM lParam)
 }
 
 
-static Win7TaskbarProgress* get_progressbar(VALUE self) {
-  Win7TaskbarProgress* progressbar;
-  Data_Get_Struct(self, Win7TaskbarProgress, progressbar);
+static TaskbarProgress* get_progressbar(VALUE self) {
+  TaskbarProgress* progressbar;
+  Data_Get_Struct(self, TaskbarProgress, progressbar);
   return progressbar;
 }
- 
-static void wrap_progressbar_free(Win7TaskbarProgress* progressbar) {
+
+
+static void wrap_progressbar_free(TaskbarProgress* progressbar) {
   ruby_xfree(progressbar);
 }
- 
+
+
 static VALUE wrap_progressbar_alloc(VALUE klass) {
-	Win7TaskbarProgress* progressbar;
-  return Data_Make_Struct(klass, Win7TaskbarProgress, NULL,
+	TaskbarProgress* progressbar;
+  return Data_Make_Struct(klass, TaskbarProgress, NULL,
 		wrap_progressbar_free, progressbar);
 }
 
@@ -69,14 +80,13 @@ static VALUE wrap_set_state(VALUE self, VALUE v_flag)
 	case TBPF_NORMAL:
 	case TBPF_ERROR:
 	case TBPF_PAUSED:
-		// Valid values.
 		break;
 	default:
-		return Qfalse;
+		rb_raise(rb_eArgError, "Invalid state");
 	}
 	TBPFLAG flag = static_cast<TBPFLAG>(flag_value);
-	HWND sketchup_window = get_sketchup_handle();
-	Win7TaskbarProgress* progressbar = get_progressbar(self);
+	HWND sketchup_window = get_sketchup_window_handle();
+	TaskbarProgress* progressbar = get_progressbar(self);
 	HRESULT result = progressbar->SetProgressState(sketchup_window, flag);
   return LONG2NUM(result);
 }
@@ -86,8 +96,8 @@ static VALUE wrap_set_value(VALUE self, VALUE v_completed, VALUE v_total)
 {
 	ULONGLONG completed = NUM2ULL(v_completed);
 	ULONGLONG total = NUM2ULL(v_total);
-  HWND sketchup = get_sketchup_handle();
-	Win7TaskbarProgress* progressbar = get_progressbar(self);
+  HWND sketchup = get_sketchup_window_handle();
+	TaskbarProgress* progressbar = get_progressbar(self);
 	HRESULT result = progressbar->SetProgressValue(sketchup, completed, total);
   return LONG2NUM(result);
 }

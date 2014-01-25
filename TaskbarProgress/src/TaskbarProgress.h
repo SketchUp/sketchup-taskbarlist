@@ -1,14 +1,21 @@
 #pragma once
 
 #include <ShObjIdl.h>
+#include <winerror.h>
 
 
+// Thin wrapper over the ITaskbarList3 interface.
 // http://stackoverflow.com/a/15002979/486990
-class Win7TaskbarProgress  
+class TaskbarProgress  
 {
 public:
-  Win7TaskbarProgress();
-  virtual ~Win7TaskbarProgress();
+  TaskbarProgress();
+  virtual ~TaskbarProgress();
+
+	// http://msdn.microsoft.com/en-us/library/cc231198.aspx
+	// TODO(thomthom): Verify that the Customer bit is set to indicate that the
+	// error is customer defined.
+	const HRESULT E_INIT_FAILED = MAKE_HRESULT(SEVERITY_ERROR, FACILITY_NULL, 1);
 
   HRESULT SetProgressState(HWND hwnd, TBPFLAG flag);
 

@@ -1,13 +1,14 @@
 #include "TaskbarProgress.h"
 
 
-Win7TaskbarProgress::Win7TaskbarProgress()
+TaskbarProgress::TaskbarProgress()
 {
   m_pITaskBarList3 = NULL;
   m_bFailed = false;
 }
 
-Win7TaskbarProgress::~Win7TaskbarProgress()
+
+TaskbarProgress::~TaskbarProgress()
 {
   if (m_pITaskBarList3)   
   {
@@ -16,28 +17,30 @@ Win7TaskbarProgress::~Win7TaskbarProgress()
   }
 }
 
-HRESULT Win7TaskbarProgress::SetProgressState(HWND hwnd, TBPFLAG flag)
+
+HRESULT TaskbarProgress::SetProgressState(HWND hwnd, TBPFLAG flag)
 {
   if (Init())
 	{
 		return m_pITaskBarList3->SetProgressState(hwnd, flag);
 	}
-	// http://msdn.microsoft.com/en-us/library/cc231198.aspx
-	return 0x20000000 | 0x00000001;
+	
+	return E_INIT_FAILED;
 }
 
-HRESULT Win7TaskbarProgress::SetProgressValue(HWND hwnd,
+
+HRESULT TaskbarProgress::SetProgressValue(HWND hwnd,
 	ULONGLONG ullCompleted, ULONGLONG ullTotal)
 {
   if (Init())
 	{
 		return m_pITaskBarList3->SetProgressValue(hwnd, ullCompleted, ullTotal);
 	}
-	// http://msdn.microsoft.com/en-us/library/cc231198.aspx
-	return 0x20000000 | 0x00000001;
+	return E_INIT_FAILED;
 }
 
-bool Win7TaskbarProgress::Init()
+
+bool TaskbarProgress::Init()
 {
   if (m_pITaskBarList3)
 	{
