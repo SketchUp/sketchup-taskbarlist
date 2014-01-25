@@ -1,8 +1,9 @@
-Hello World/Debug/
 Debug/
+Release/
+ipch/
+xcuserdata/
+
 *.opensdf
 *.sdf
-ipch/
 *.suo
-Release/
-xcuserdata/
+*.sublime-workspace
