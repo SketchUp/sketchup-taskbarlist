@@ -13,3 +13,17 @@ http://www.visualstudio.com/downloads/download-visual-studio-vs
 
 NOTE: The Ruby `config.h` had to be modified because it was originally intended
 for Visual Studio 2010.
+
+## Example
+
+```ruby
+require 'sketchup.rb'
+require 'taskbar_progress.rb'
+
+model = Sketchup.active_model
+entities = model.active_entities
+
+TaskbarProgress.new.each(entities.to_a) { |entity|
+  entity.erase!
+}
+```
