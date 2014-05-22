@@ -94,6 +94,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)ThirdParty\include\ruby\win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -122,6 +123,7 @@
     <ClCompile Include="src\TaskbarProgress.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\RubyExtension.h" />
     <ClInclude Include="src\RubyUtils\RubyLib.h" />
     <ClInclude Include="src\RubyUtils\RubyUtils.h" />
     <ClInclude Include="src\TaskbarProgress.h" />
