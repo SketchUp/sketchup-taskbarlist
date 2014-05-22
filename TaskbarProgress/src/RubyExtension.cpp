@@ -1,5 +1,4 @@
-// NOTE: This must appear before Windows.h in order to avoid build errors.
-#include "RubyUtils/RubyUtils.h"
+#include "RubyExtension.h"
 
 #include <assert.h>
 #include <Windows.h>
@@ -7,16 +6,21 @@
 #include "TaskbarProgress.h"
 
 
-static HWND get_sketchup_window_handle();
-static BOOL CALLBACK EnumThreadWndProc(HWND hwnd,LPARAM lParam);
-static TaskbarProgress* get_progressbar(VALUE self);
-static void wrap_progressbar_free(TaskbarProgress* progressbar);
-static VALUE wrap_progressbar_alloc(VALUE klass);
-static VALUE wrap_set_state(VALUE self, VALUE flag);
-static VALUE wrap_set_value(VALUE self, VALUE completed, VALUE total);
+namespace sketchup {
+namespace ruby {
+namespace taskbarutils {
+namespace {
+
+HWND get_sketchup_window_handle();
+BOOL CALLBACK EnumThreadWndProc(HWND hwnd,LPARAM lParam);
+TaskbarProgress* get_progressbar(VALUE self);
+void wrap_progressbar_free(TaskbarProgress* progressbar);
+VALUE wrap_progressbar_alloc(VALUE klass);
+VALUE wrap_set_state(VALUE self, VALUE flag);
+VALUE wrap_set_value(VALUE self, VALUE completed, VALUE total);
 
 
-static HWND get_sketchup_window_handle()
+HWND get_sketchup_window_handle()
 {
 	// TODO(thomthom): Review is there is a better way of getting a handle to the
 	// SketchUp window.
@@ -36,7 +40,7 @@ static HWND get_sketchup_window_handle()
 }
 
 
-static BOOL CALLBACK EnumThreadWndProc(HWND hwnd, LPARAM lParam)
+BOOL CALLBACK EnumThreadWndProc(HWND hwnd, LPARAM lParam)
 {
 	// TODO(thomthom): Might want to check the window title of `root` to ensure
 	// that is really is the SketchUp Window. When going over the whole set of
@@ -51,26 +55,26 @@ static BOOL CALLBACK EnumThreadWndProc(HWND hwnd, LPARAM lParam)
 }
 
 
-static TaskbarProgress* get_progressbar(VALUE self) {
+TaskbarProgress* get_progressbar(VALUE self) {
   TaskbarProgress* progressbar;
   Data_Get_Struct(self, TaskbarProgress, progressbar);
   return progressbar;
 }
 
 
-static void wrap_progressbar_free(TaskbarProgress* progressbar) {
+void wrap_progressbar_free(TaskbarProgress* progressbar) {
   ruby_xfree(progressbar);
 }
 
 
-static VALUE wrap_progressbar_alloc(VALUE klass) {
+VALUE wrap_progressbar_alloc(VALUE klass) {
 	TaskbarProgress* progressbar;
   return Data_Make_Struct(klass, TaskbarProgress, NULL,
 		wrap_progressbar_free, progressbar);
 }
 
 
-static VALUE wrap_set_state(VALUE self, VALUE v_flag)
+VALUE wrap_set_state(VALUE self, VALUE v_flag)
 {
 	int flag_value = NUM2INT(v_flag);
 	switch (flag_value)
@@ -92,7 +96,7 @@ static VALUE wrap_set_state(VALUE self, VALUE v_flag)
 }
 
 
-static VALUE wrap_set_value(VALUE self, VALUE v_completed, VALUE v_total)
+VALUE wrap_set_value(VALUE self, VALUE v_completed, VALUE v_total)
 {
 	ULONGLONG completed = NUM2ULL(v_completed);
 	ULONGLONG total = NUM2ULL(v_total);
@@ -102,9 +106,10 @@ static VALUE wrap_set_value(VALUE self, VALUE v_completed, VALUE v_total)
   return LONG2NUM(result);
 }
 
+} // namespace
 
-extern "C"
-void Init_TaskbarProgress()
+
+void InitUnder(VALUE parent)
 {
 	VALUE cTaskbarProcess = rb_define_class("TaskbarProgress", rb_cObject);
 
@@ -120,4 +125,15 @@ void Init_TaskbarProgress()
 	rb_define_const(cTaskbarProcess, "NORMAL",        INT2NUM(TBPF_NORMAL));
 	rb_define_const(cTaskbarProcess, "ERROR",         INT2NUM(TBPF_ERROR));
 	rb_define_const(cTaskbarProcess, "PAUSED",        INT2NUM(TBPF_PAUSED));
+}
+
+} // namespace taskbarutils
+} // namespace ruby
+} // namespace sketchup
+
+
+extern "C"
+void Init_TaskbarProgress()
+{
+  sketchup::ruby::taskbarutils::InitUnder(rb_cObject);
 }

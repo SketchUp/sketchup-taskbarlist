@@ -4,6 +4,9 @@
 #include <winerror.h>
 
 
+namespace sketchup {
+
+
 // Thin wrapper over the ITaskbarList3 interface.
 // http://stackoverflow.com/a/15002979/486990
 class TaskbarProgress  
@@ -27,3 +30,6 @@ private:
   ITaskbarList3* m_pITaskBarList3;
   bool m_bFailed;
 };
+
+
+} // namespace sketchup

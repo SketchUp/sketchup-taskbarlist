@@ -1,6 +1,8 @@
 #include "TaskbarProgress.h"
 
 
+namespace sketchup {
+
 TaskbarProgress::TaskbarProgress()
 {
   m_pITaskBarList3 = NULL;
@@ -67,3 +69,6 @@ bool TaskbarProgress::Init()
   CoUninitialize();
   return false;
 }
+
+
+} // namespace sketchup

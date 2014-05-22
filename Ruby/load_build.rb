@@ -6,5 +6,6 @@ $LOAD_PATH << src_path
 
 require File.join(solution_path, BUILD, 'TaskbarProgress')
 require 'taskbar_progress.rb'
+require File.join(ruby_path, "example.rb")
 
 puts "TaskbarProgress #{TaskbarProgress::CEXT_VERSION} (#{BUILD}) loaded!"
